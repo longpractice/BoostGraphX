@@ -10,8 +10,8 @@
 namespace bglx::detail {
 template <typename VertexListGraph>
 struct EulerDigraghHelper {
-    using Vertex = typename boost::graph_traits<VertexListGraph>::vertex_descriptor;
-    using Edge = typename boost::graph_traits<VertexListGraph>::edge_descriptor;
+    using V = typename boost::graph_traits<VertexListGraph>::vertex_descriptor;
+    using E = typename boost::graph_traits<VertexListGraph>::edge_descriptor;
 
     using DirectedCategory = typename boost::graph_traits<VertexListGraph>::directed_category;
     using IsDirected = std::is_convertible<DirectedCategory, boost::directed_tag>;
@@ -38,18 +38,18 @@ struct EulerDigraghHelper {
     using DagAuxPure = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>;
     using VAux = typename DagAuxPure::vertex_descriptor;
 
-    using EList = std::list<Edge>;
-    using EListIt = typename std::list<Edge>::iterator;
+    using EList = std::list<E>;
+    using EListIt = typename std::list<E>::iterator;
     using VAuxList = std::list<VAux>;
     using VAuxListIt = typename VAuxList::iterator;
 
     struct EAuxProp {
-        Edge eOrigin;
+        E eOrigin;
         std::optional<EListIt> eWalkListIt;
     };
 
     struct VAuxProp {
-        Vertex vOrigin;
+        V vOrigin;
         size_t firstUnVisitedEdgeId { 0 };
         // we could not use EAuxListIt here, since once it is default constructed
         // it is a "singular" iterator that we could not even assign to it
@@ -146,7 +146,7 @@ struct EulerDigraghHelper {
         const VertexListGraph& from;
         GAux& to;
 
-        void operator()(Vertex input, VAux output) const
+        void operator()(V input, VAux output) const
         {
             to[output].vOrigin = input;
         }
@@ -160,24 +160,16 @@ struct EulerDigraghHelper {
         const VertexListGraph& from;
         GAux& to;
 
-        void operator()(Edge input, EAux output) const
+        void operator()(E input, EAux output) const
         {
             to[output].eOrigin = input;
         }
     };
 
-    //create a auxilliary dag, this is indeed take half of the whole computing time
-    static void makeAuxDag(VertexListGraph& gOrigin, GAux& gAux)
-    {
-        boost::copy_graph(
-            gOrigin,
-            gAux,
-            boost::vertex_copy(VCopier(gOrigin, gAux)).edge_copy(ECopier(gOrigin, gAux)));
-    }
 
     //find euler cycle using Hierholzer algorithm, with out ensuring any edge being the
     //first edge
-    static std::list<Edge> __findEulerCycle_Hierholzer(GAux& gAux, Vertex firstV)
+    static std::list<E> findEulerCycle_Hierholzer(GAux& gAux, VAux firstV)
     {
         VAuxList unfinishedVList;
         EList closedWalk;
@@ -195,9 +187,9 @@ struct EulerDigraghHelper {
     // e_ensure_first will be the first edge in the cycle
     // This is useful for algorithm for Eulerian trail (or Eulerian path) with
     // the start vertex and the end vertex different
-	//
-    static std::list<Edge> __findEulerCycle_Hierholzer_ensure_first_edge(
-        GAux& gAux, Vertex firstV, EAux e_ensure_first)
+    //
+    static std::list<E> findEulerCycle_Hierholzer_ensure_first_edge(
+        GAux& gAux, V firstV, EAux e_ensure_first)
     {
         VAuxList unfinishedVList;
         EList closedWalk;
@@ -219,43 +211,136 @@ struct EulerDigraghHelper {
         closedWalkReordered.splice(closedWalkReordered.end(), closedWalk);
         return closedWalkReordered;
     }
+
+    static std::list<E> findEulerTour(GAux& gAux, VAux firstV, VAux lastV)
+    {
+        //First add a edge going from lastV to firstV and
+        //Then find an euler cycle starting and ending at lastV
+        //After erasing the first edge, we have a euler tour from firstV -> lastV
+        auto [e, ok] = boost::add_edge(lastV, firstV, gAux);
+		auto edges = findEulerCycle_Hierholzer_ensure_first_edge(gAux, lastV, e);
+		//erase the first edge
+		edges.erase(edges.begin());
+		return edges;
+    }
 };
 }
 
 namespace bglx {
+
 template <typename VertexListGraph>
 std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
-find_one_euler_cycle(const VertexListGraph& g,
+find_one_directed_euler_cycle(
+    const VertexListGraph& g,
     typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_cycle_start_vertex)
 {
-    using EulerGraph = detail::EulerDigraghHelper<VertexListGraph>;
-    typename EulerGraph::GAux gAux;
-    typename EulerGraph::VCopier vCopier(g, gAux);
-    typename EulerGraph::ECopier eCopier(g, gAux);
-    boost::copy_graph(g, gAux,
-        boost::vertex_copy(vCopier).edge_copy(eCopier));
-    return EulerGraph::__findEulerCycle_Hierholzer(gAux, euler_cycle_start_vertex);
+    using GHelper = detail::EulerDigraghHelper<VertexListGraph>;
+    typename GHelper::GAux gAux;
+    typename GHelper::VAux vAuxStart;
+
+    //while coping, record the vAux correspondent to euler_cycle_start_vertex
+    auto vMarkedCopier =
+        [&](typename GHelper::V input, typename GHelper::VAux output) {
+            gAux[output].vOrigin = input;
+            if (input == euler_cycle_start_vertex) {
+                vAuxStart = output;
+            }
+        };
+    typename GHelper::ECopier eCopier(g, gAux);
+    boost::copy_graph(
+        g,
+        gAux,
+        boost::vertex_copy(vMarkedCopier).
+		edge_copy(eCopier)
+	);
+    return GHelper::findEulerCycle_Hierholzer(gAux, vAuxStart);
 }
 
-template <typename VertexListGraph>
+template <typename VertexListGraph, typename VertexIndexMap>
 std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
-find_one_euler_cycle(const VertexListGraph& g)
+find_one_directed_euler_cycle(
+    const VertexListGraph& g,
+    typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_cycle_start_vertex,
+    const VertexIndexMap& i_map)
 {
-    if (boost::num_vertices(g) == 0) {
-        return {};
-    }
+	using GHelper = detail::EulerDigraghHelper<VertexListGraph>;
+	typename GHelper::GAux gAux;
+	typename GHelper::VAux vAuxStart;
 
-    auto vStart = *boost::vertices(g).first;
-    return find_one_euler_cycle(g, vStart);
+	//while coping, record the vAux correspondent to euler_cycle_start_vertex
+	auto vMarkedCopier =
+		[&](typename GHelper::V input, typename GHelper::VAux output) {
+		gAux[output].vOrigin = input;
+		if (input == euler_cycle_start_vertex) {
+			vAuxStart = output;
+		}
+	};
+	typename GHelper::ECopier eCopier(g, gAux);
+	boost::copy_graph(
+		g,
+		gAux,
+		boost::vertex_copy(vMarkedCopier).edge_copy(eCopier).vertex_index_map(i_map));
+	return GHelper::findEulerCycle_Hierholzer(gAux, vAuxStart);
 }
 
 template <typename VertexListGraph>
 std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
-find_one_euler_tour(const VertexListGraph& g,
+find_one_directed_euler_tour(const VertexListGraph& g,
     typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_start_vertex,
     typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_end_vertex)
 {
-    //assert(euler_c)
+    //should use euler cycle functions if the start and tour equals
+    assert(euler_tour_start_vertex != euler_tour_end_vertex);
+    using EulerGraph = detail::EulerDigraghHelper<VertexListGraph>;
+    typename EulerGraph::GAux gAux;
+    typename EulerGraph::VAux vAuxStart;
+    typename EulerGraph::VAux vAuxLast;
+
+    auto vMarkedCopier =
+        [&](typename EulerGraph::V input, typename EulerGraph::VAux output) {
+            gAux[output].vOrigin = input;
+            if (input == euler_tour_start_vertex) {
+                vAuxStart = output;
+            } else if (input == euler_tour_end_vertex) {
+                vAuxLast = output;
+            }
+        };
+    typename EulerGraph::ECopier eCopier(g, gAux);
+    boost::copy_graph(
+        g, gAux,
+        boost::vertex_copy(vMarkedCopier).edge_copy(eCopier));
+
+    return EulerGraph::findEulerTour(gAux, vAuxStart, vAuxLast);;
 }
 
+template <typename VertexListGraph, typename VertexIndexMap>
+std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
+find_one_directed_euler_tour(const VertexListGraph& g,
+    typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_start_vertex,
+    typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_end_vertex,
+    const VertexIndexMap& i_map)
+{
+    //should use euler cycle functions if the start and tour equals
+    assert(euler_tour_start_vertex != euler_tour_end_vertex);
+    using EulerGraph = detail::EulerDigraghHelper<VertexListGraph>;
+    typename EulerGraph::GAux gAux;
+    typename EulerGraph::VAux vAuxStart;
+    typename EulerGraph::VAux vAuxLast;
+
+    auto vMarkedCopier =
+        [&](typename EulerGraph::V input, typename EulerGraph::VAux output) {
+            gAux[output].vOrigin = input;
+            if (input == euler_tour_start_vertex) {
+                vAuxStart = output;
+            } else if (input == euler_tour_end_vertex) {
+                vAuxLast = output;
+            }
+        };
+    typename EulerGraph::ECopier eCopier(g, gAux);
+    boost::copy_graph(
+        g, gAux,
+        boost::vertex_copy(vMarkedCopier).edge_copy(eCopier).vertex_index_map(i_map));
+
+    return EulerGraph::findEulerTour(gAux, vAuxStart, vAuxLast);
+}
 }
