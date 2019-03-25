@@ -216,7 +216,7 @@ namespace bglx::detail
 			return closed_walk_reordered;
 		}
 
-		static std::list<E> find_euler_tour(G_Aux& gAux, V_Aux firstV, V_Aux lastV)
+		static std::list<E> find_euler_trail(G_Aux& gAux, V_Aux firstV, V_Aux lastV)
 		{
 			//First add a edge going from lastV to firstV and
 			//Then find an euler cycle starting and ending at lastV
@@ -289,9 +289,9 @@ namespace bglx {
 
 	template <typename VertexListGraph>
 	std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
-		find_one_directed_euler_tour_hierholzer(const VertexListGraph& g,
-			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_start_vertex,
-			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_end_vertex)
+		find_one_directed_euler_trail_hierholzer(const VertexListGraph& g,
+			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_trail_start_vertex,
+			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_trail_end_vertex)
 	{
 		//should use euler cycle functions if the start and tour equals
 		assert(euler_tour_start_vertex != euler_tour_end_vertex);
@@ -303,10 +303,10 @@ namespace bglx {
 		auto v_marked__copier =
 			[&](typename GHelper::V input, typename GHelper::V_Aux output) {
 			g_aux[output].v_origin = input;
-			if (input == euler_tour_start_vertex) {
+			if (input == euler_trail_start_vertex) {
 				v_aux_start = output;
 			}
-			else if (input == euler_tour_end_vertex) {
+			else if (input == euler_trail_end_vertex) {
 				v_aux_last = output;
 			}
 		};
@@ -315,14 +315,14 @@ namespace bglx {
 			g, g_aux,
 			boost::vertex_copy(v_marked__copier).edge_copy(e_copier));
 
-		return GHelper::find_euler_tour(g_aux, v_aux_start, v_aux_last);
+		return GHelper::find_euler_trail(g_aux, v_aux_start, v_aux_last);
 	}
 
 	template <typename VertexListGraph, typename VertexIndexMap>
 	std::list<typename boost::graph_traits<VertexListGraph>::edge_descriptor>
-		find_one_directed_euler_tour_hierholzer(const VertexListGraph& g,
-			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_start_vertex,
-			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_tour_end_vertex,
+		find_one_directed_euler_trail_hierholzer(const VertexListGraph& g,
+			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_trail_start_vertex,
+			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_trail_end_vertex,
 			const VertexIndexMap& i_map)
 	{
 		//should use euler cycle functions if the start and tour equals
@@ -335,11 +335,11 @@ namespace bglx {
 		auto v_marked__copier =
 			[&](typename GHelper::V input, typename GHelper::V_Aux output) {
 			g_aux[output].v_origin = input;
-			if (input == euler_tour_start_vertex)
+			if (input == euler_trail_start_vertex)
 			{
 				v_aux_start = output;
 			}
-			else if (input == euler_tour_end_vertex)
+			else if (input == euler_trail_end_vertex)
 			{
 				v_aux_last = output;
 			}
@@ -351,6 +351,6 @@ namespace bglx {
 			boost::vertex_copy(v_marked__copier).edge_copy(e_copier).vertex_index_map(i_map)
 		);
 
-		return GHelper::find_euler_tour(g_aux, v_aux_start, v_aux_last);
+		return GHelper::find_euler_trail(g_aux, v_aux_start, v_aux_last);
 	}
 }
