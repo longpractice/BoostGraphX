@@ -34,11 +34,11 @@ namespace bglx::detail
 		// However, the vertex descriptor type depends on the graph type which depends on the vertex
 		// property type.
 		//
-		// We therefore use this Dag_Aux_Pure::vertex_descriptor independent on vertex property
+		// We therefore use this G_Aux_Pure::vertex_descriptor independent on vertex property
 		// Indeed, the vertex descriptor is just a size_t here. Not that a big concern.
 		//
-		using Dag_Aux_Pure = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>;
-		using V_Aux = typename Dag_Aux_Pure::vertex_descriptor;
+		using G_Aux_Pure = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>;
+		using V_Aux = typename G_Aux_Pure::vertex_descriptor;
 
 		using V_Aux_List = std::list<V_Aux>;
 		using V_Aux_List_It = typename V_Aux_List::iterator;
@@ -294,7 +294,7 @@ namespace bglx {
 			typename boost::graph_traits<VertexListGraph>::vertex_descriptor euler_trail_end_vertex)
 	{
 		//should use euler cycle functions if the start and tour equals
-		assert(euler_tour_start_vertex != euler_tour_end_vertex);
+		assert(euler_trail_start_vertex != euler_trail_end_vertex);
 		using GHelper = detail::Euler_Digraph_Helper<VertexListGraph>;
 		typename GHelper::G_Aux g_aux;
 		typename GHelper::V_Aux v_aux_start;
@@ -326,7 +326,7 @@ namespace bglx {
 			const VertexIndexMap& i_map)
 	{
 		//should use euler cycle functions if the start and tour equals
-		assert(euler_tour_start_vertex != euler_tour_end_vertex);
+		assert(euler_trail_start_vertex != euler_trail_end_vertex);
 		using GHelper = detail::Euler_Digraph_Helper<VertexListGraph>;
 		typename GHelper::G_Aux g_aux;
 		typename GHelper::V_Aux v_aux_start;
