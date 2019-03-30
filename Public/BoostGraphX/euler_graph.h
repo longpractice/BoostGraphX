@@ -37,10 +37,10 @@ namespace bglx::detail
 		// Indeed, the vertex descriptor is just a size_t here. Not that a big concern.
 		//
 		using G_Aux_Pure = boost::adjacency_list<boost::vecS, boost::vecS, boost::directedS>;
-		using V_Aux = typename G_Aux_Pure::vertex_descriptor;
+		using V_Aux = G_Aux_Pure::vertex_descriptor;
 
 		using V_Aux_List = std::list<V_Aux>;
-		using V_Aux_List_It = typename V_Aux_List::iterator;
+		using V_Aux_List_It = V_Aux_List::iterator;
 
 		using E_List = std::list<E>;
 		using E_List_It = typename std::list<E>::iterator;
@@ -49,17 +49,13 @@ namespace bglx::detail
 		struct E_Aux_Prop
 		{
 			E e_origin;
-			// we could not use raw iterator here, since once it is default constructed
-			// it is a "singular" iterator that we could not even assign to it
-			std::optional<E_List_It> e_walk_list_it;
+			E_List_It e_walk_list_it;
 		};
 
 		struct V_Aux_Prop {
 			V v_origin;
 			size_t first_unfinished_edge_id{ 0 };
-			// we could not use raw iterator here, since once it is default constructed
-			// it is a "singular" iterator that we could not even assign to it
-			std::optional<V_Aux_List_It> v_unfinished_list_it;
+			V_Aux_List_It v_unfinished_list_it;
 		};
 
 		using G_Aux = boost::adjacency_list<
@@ -101,7 +97,7 @@ namespace bglx::detail
 			if (aux[v].first_unfinished_edge_id != 0) {
 				const auto& e_visited = *(out_edges.first + aux[v].first_unfinished_edge_id - 1);
 				const auto& it_e_visited = aux[e_visited].e_walk_list_it;
-				prev_visited_out_edge = std::make_unique<E_List_It>(*it_e_visited);
+				prev_visited_out_edge = std::make_unique<E_List_It>(it_e_visited);
 			}
 
 			do {
@@ -114,19 +110,19 @@ namespace bglx::detail
 				++v_prop.first_unfinished_edge_id;
 
 				new_closed_walk.emplace_back(aux[e_out].e_origin);
-				aux[e_out].e_walk_list_it = { --new_closed_walk.end() };
+				aux[e_out].e_walk_list_it = --new_closed_walk.end();
 
 				//v was partially visited before, if we have finished the last
 				bool just_become_unfinished = v_prop.first_unfinished_edge_id == 1 && v_prop.first_unfinished_edge_id != out_degree;
 				if (just_become_unfinished) {
 					unfinished_v_list.emplace_back(v);
-					v_prop.v_unfinished_list_it = { --unfinished_v_list.end() };
+					v_prop.v_unfinished_list_it = --unfinished_v_list.end();
 				}
 
 				//it was partially visited before and now need to be moved out
 				bool justMovedOutOfUnfinishedVList = v_prop.first_unfinished_edge_id == out_degree && out_degree > 1;
 				if (justMovedOutOfUnfinishedVList) {
-					unfinished_v_list.erase(*v_prop.v_unfinished_list_it);
+					unfinished_v_list.erase(v_prop.v_unfinished_list_it);
 				}
 				v = boost::target(e_out, aux);
 			} while (v != v_first);
