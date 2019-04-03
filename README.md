@@ -2,14 +2,16 @@
 
 I have been a professional C++ programmer for several years. I frequently find many algorithms missing from BGL which I would love to add by myself.
 
-The added methods now include:
+---
+
+#### The methods now include:
 
 * Euler trial/cycle/tour/circuit (Hierholzer Algorithm)
 
 * Minimum feedback arc set (heuristic method based on the paper by Eades, Lin et al.: https://doi.org/10.1016/0020-0190(93)90079-O)
 
 
-
+---
 
 Large amount of time is invested on:
 
