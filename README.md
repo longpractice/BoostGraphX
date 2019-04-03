@@ -1,4 +1,4 @@
-# BoostGraphX
+## BoostGraphX
 
 I have been a professional C++ programmer for several years. I frequently find many algorithms missing from BGL which I would love to add by myself.
 
@@ -13,7 +13,7 @@ I have been a professional C++ programmer for several years. I frequently find m
 
 ---
 
-Large amount of time is invested on:
+#### Keypoints
 
 1. Unit testing. Reliability of C++ code is very important. All methods are unit-tested. The unit tests are in a seperate repo:
    https://github.com/longpractice/TestBoostGraphX
@@ -24,7 +24,9 @@ Large amount of time is invested on:
 3. Algorithm/Data Structure Efficiency. The algorithms and data structures are carefully designed and profiled to guarantee a good memory and time efficiency. STL is frequently used a lot, but carefully not to slow things down. 
 C++ is also evolving. I keep an eye on new changes such the polymorphic allocator and polymorphic containers. It is not ideal now, but it would give a huge boost of performance(maybe in C++20 or later).
 
-## Limitations:
+---
+
+#### Limitations:
 
 Note that I use C++17 features like structured binding and extract method of associated container. Make sure you have the latest compiler.
 
