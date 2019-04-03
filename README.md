@@ -4,11 +4,9 @@ I have been a professional C++ programmer for several years. I frequently find m
 
 The added methods now include:
 
--- Euler cycle/ Euler tour / Euler circuit
+* Euler trial/cycle/tour/circuit (Hierholzer Algorithm)
 
--- Euler trail
-
--- Minimum feedback arc set by Eades, Lin et.al. https://doi.org/10.1016/0020-0190(93)90079-O
+* Minimum feedback arc set (heuristic method based on the paper by Eades, Lin et al.: https://doi.org/10.1016/0020-0190(93)90079-O)
 
 
 
