@@ -443,11 +443,6 @@ namespace bglx
 
 		void process()
 		{
-			if (!p_last_non_empty_bin)
-			{
-				//empty graph
-				return;
-			}
 			auto nrVertices = boost::num_vertices(g);
 			while (s1.size() + s2.size() != nrVertices)
 			{
