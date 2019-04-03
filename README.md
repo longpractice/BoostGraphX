@@ -1,6 +1,6 @@
 ## BoostGraphX
 
-I have been a professional C++ programmer for several years. I frequently find many algorithms missing from BGL which I would love to add by myself.
+This repository is aimed to add more methods for boost graph library. I have been a professional C++ programmer for several years. I frequently find many algorithms missing from BGL which I would love to add by myself.
 
 ---
 
@@ -13,7 +13,7 @@ I have been a professional C++ programmer for several years. I frequently find m
 
 ---
 
-#### Keypoints
+#### Keypoints:
 
 1. Unit testing. Reliability of C++ code is very important. All methods are unit-tested. The unit tests are in a seperate repo:
    https://github.com/longpractice/TestBoostGraphX
