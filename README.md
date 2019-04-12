@@ -15,13 +15,13 @@ This repository is aimed to add more methods for boost graph library. I have bee
 
 #### Keypoints:
 
-1. Unit testing. Reliability of C++ code is very important. All methods are unit-tested. The unit tests are in a seperate repo:
+1. __Unit testing__. Reliability of C++ code is very important. All methods are unit-tested. The unit tests are in a seperate repo:
    https://github.com/longpractice/TestBoostGraphX
 
 
-2. Genericity. Just as boost graph library, my generic template methods adapts to your type system in the most convenient way. 
+2. __Genericity__. Just as boost graph library, my generic template methods adapts to your type system in the most convenient way. 
 
-3. Algorithm/Data Structure Efficiency. The algorithms and data structures are carefully designed and profiled to guarantee a good memory and time efficiency. STL is frequently used a lot, but carefully not to slow things down. 
+3. __Algorithm/Data Structure Efficiency__. The algorithms and data structures are carefully designed and profiled to guarantee a good memory and time efficiency. STL is frequently used a lot, but carefully not to slow things down. 
 C++ is also evolving. I keep an eye on new changes such the polymorphic allocator and polymorphic containers. It is not ideal now, but it would give a huge boost of performance(maybe in C++20 or later).
 
 ---
