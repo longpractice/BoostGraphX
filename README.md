@@ -1,3 +1,11 @@
+2023 Note:
+Unfortunately, This is discontinued. 
+The reason is that I found boost graph representation in many cases a failed abstraction. It has a common mistake of C++ data structure: mixing the data storage problem with the data relations problem. Its defined several ways (std vectors, unordered_sets, or lists) of storage of vertices and edges are not efficient enough. Even though you can make the Vertex in boost graph very small and hold pointer to your own data structure, for large graph, the allocations are still very expensive). 
+
+Mostly now I tend to decouple the problem of data storage from data relations: vertices/edges are intrusive linked list nodes and we find the data we  
+want through pointer offsets. For example, if I know some well defined unit always holds 3 edges(particularly, I had the mesh having a triangle holding 3 directly edges), I can well put 3 edges inside the triangle data structure, and I can still have library functions for purely "graph" structure using purely edges and vertices pointers. My point is that a graph library should really offer the ability of split out the concern of data storage to let the author to do it flexibly. 
+
+
 ## BoostGraphX
 
 This repository is aimed to add more methods for boost graph library. I have been a professional C++ programmer for several years. I frequently find many algorithms missing from BGL which I would love to add by myself.
